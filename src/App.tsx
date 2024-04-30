@@ -1,26 +1,39 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Route, Routes } from 'react-router-dom';
+import { Authorization, Main } from './pages';
+import { Header } from './components';
+import { useAppDispatch } from './redux/store';
+import { useLayoutEffect, useState } from 'react';
+import { setUser } from './redux/reducers';
+import { EntryForm } from './pages/entry-form/entry-form';
+import { request } from './utils';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default function App() {
+	const [loader, setLoader] = useState(true);
+
+	const dispatch = useAppDispatch();
+
+	useLayoutEffect(() => {
+		request('/user').then(({ error, email }) => {
+			if (error) {
+				return;
+			}
+
+			dispatch(setUser({ email }));
+			setLoader(false);
+		});
+	}, [dispatch]);
+
+	return !loader ? (
+		<div className="App">
+			<Header />
+			<Routes>
+				<Route path="/" element={<Main />} />
+				<Route path="/login" element={<Authorization />} />
+				<Route path="/entry_form" element={<EntryForm />} />
+			</Routes>
+			{/* <Footer /> */}
+		</div>
+	) : (
+		<></>
+	);
 }
-
-export default App;
